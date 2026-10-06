@@ -233,7 +233,14 @@ test('Actions asks for email, keeps Token private and uses the shared deploy ent
 
 test('Force Update selects a marked official commit and deploys the same SHA directly', async () => {
   const deploy = await readFile(new URL('../.github/workflows/deploy.yml', import.meta.url), 'utf8');
-  const update = await readFile(new URL('../.github/workflows/force-update.yml', import.meta.url), 'utf8');
+  // fork 已移除上游 force-update workflow（防止第三方提交覆盖并自动部署本实例）；文件不存在则跳过。
+  const updateUrl = new URL('../.github/workflows/force-update.yml', import.meta.url);
+  let update: string;
+  try {
+    update = await readFile(updateUrl, 'utf8');
+  } catch {
+    return;
+  }
 
   assert.ok(deploy.includes('workflow_call:'));
   assert.ok(deploy.includes('deployment_ref:'));
